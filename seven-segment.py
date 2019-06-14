@@ -3,6 +3,7 @@
 from time import sleep
 from flask import Flask, abort, request
 from uuid import getnode as get_mac
+from nmeaserver import server, formatter
 import re
 import os
 import logging
@@ -14,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 try:
     import RPi.GPIO as GPIO
-    # from fake_rpi.RPi import GPIO as GPIO
+    #from fake_rpi.RPi import GPIO as GPIO
 except RuntimeError:
     logger.error("""Error importing RPi.GPIO!  This is probably because you 
                  need superuser privileges.  You can achieve this by using
@@ -22,7 +23,7 @@ except RuntimeError:
 
 
 app = Flask(__name__)
-
+nmeaserver = server.NMEAServer('', 9000, True)
 
 pulse_length = 0.1
 clear_sleep = 0.3
@@ -111,8 +112,26 @@ def bootup():
     sleep(sleepSec)
     clear()
 
+@nmeaserver.message('RXSSC')
+def nmea_enable(context, message):
+    try:
+        logger.debug("Received RXSSC message to activate {}".format(message['data'][1]))
+        
+        segment = message['data'][1]
+        matchObj = re.match( r'[1-9\.]', segment)
+        if matchObj:
+            clear()
+            enable(segment, pulse_length)
+            return formatter.format("RXSSS,A,%s,0" % segment)
+        else:
+            return formatter.format("RXERR,Only %s are accepted" % valid_input)
+    except BaseException as err:
+        return formatter.format("RXERR,Invalid message. Example of a valid message: $RXSSC,A,1*39")
+
 if __name__ == '__main__':
     GPIO.setmode(GPIO.BOARD)
     GPIO.setup(gpio_list, GPIO.OUT)
     bootup()
+    nmeaserver.start()
     app.run(debug=True, use_reloader=False, host='0.0.0.0')
+    

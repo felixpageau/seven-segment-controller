@@ -4,13 +4,14 @@ from setuptools import setup as setup, find_packages
 
 install_require = [
 	'flask',
+    'nmeaserver',
 	'setuptools',
     'RPi.GPIO', #Disable this line on non-RaspberryPI computers -- Also fix lines 15-16 of seven-segment.py
 	#'fake_rpi', #Enable this line on non-RaspberryPI computers -- Also fix lines 15-16 of seven-segment.py
 ]
 
 setup(name='seven-segment-controller',
-	  version='1.0',
+	  version='1.1',
 	  description='Control software for the 7-segment display running on a Raspberry PI.',
 	  author='Felix Pageau',
 	  author_email='pageau@robonation.org',

@@ -7,3 +7,4 @@
 build/
 dist/
 seven-segment-controller.egg-info/
+seven_segment_controller.egg-info

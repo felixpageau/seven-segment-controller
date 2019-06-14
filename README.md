@@ -31,4 +31,9 @@ A REST server running on port 5000 is surfacing the following routes:
 * [/activate/[1-3]](/activate/1) -> Activate the set of vanes needed to represent the character 1, 2 or 3 (Do not send the square bracket!)
 * [/shutdown](/shutdown) -> Shuts down the raspberry pi controller. RPi have a tendency of corrupting their microSD so use this for a clean shutdown
 
+## NMEA 0183 API
+* TDACT: Activate the set of vanes needed to represent the character 1, 2 or 3 (Do not send the square bracket!). 
+  * Format: '$RXSSC,[A-C],[1-3]**CC'
+  * Example: '$RXSSC,A,1*39'
+
   

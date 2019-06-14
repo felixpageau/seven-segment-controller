@@ -114,6 +114,7 @@ def bootup():
 
 @nmeaserver.message('RXSSC')
 def nmea_enable(context, message):
+    global active
     try:
         logger.debug("Received RXSSC message to activate {}".format(message['data'][1]))
         
@@ -122,11 +123,16 @@ def nmea_enable(context, message):
         if matchObj:
             clear()
             enable(segment, pulse_length)
-            return formatter.format("RXSSS,A,%s,0" % segment)
+            return nmea_status(context, message)
         else:
             return formatter.format("RXERR,Only %s are accepted" % valid_input)
     except BaseException as err:
         return formatter.format("RXERR,Invalid message. Example of a valid message: $RXSSC,A,1*39")
+
+@nmeaserver.message('RXSTA')
+def nmea_status(context, message):
+    global active
+    return formatter.format("RXSSS,A,%s,0" % active)
 
 if __name__ == '__main__':
     GPIO.setmode(GPIO.BOARD)

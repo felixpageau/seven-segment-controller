@@ -23,7 +23,7 @@ except RuntimeError:
 
 
 app = Flask(__name__)
-nmeaserver = server.NMEAServer('', 9000, True)
+nmeaserver = server.NMEAServer('', 4000, True)
 
 pulse_length = 0.1
 clear_sleep = 0.3

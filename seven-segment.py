@@ -135,7 +135,7 @@ def nmea_enable(context, message):
 @nmeaserver.message('RXSTA')
 def nmea_status(context, message):
     global active
-    return formatter.format("RXSSS,A,%s,0" % active, True)
+    return formatter.format("RXSSS,A,%s,12000" % active, True)
 
 @nmeaserver.response_stream()
 def status_stream(context, wfile):

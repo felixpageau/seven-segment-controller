@@ -7,6 +7,7 @@ from nmeaserver import server, formatter
 import re
 import os
 import logging
+import time
 
 print("*** If you are seeing many lines with 'fake_rpi.RPi' someone forget " \
       "to switch back to RPi dependencies (still on the fake_rpi module) ***")
@@ -48,6 +49,7 @@ segment_map = {
     'F': [12,32,36,38],
     '.': [40],
     ' ': [40],
+    '#': [40],
 }
 active = ' '
 
@@ -55,16 +57,17 @@ def enable(hex, duration):
     global active
     segments = segment_map.get(hex)
     if segments != None:
-        active = hex
-        GPIO.output(segments, GPIO.HIGH)
-        sleep(duration)
-        GPIO.output(segments, GPIO.LOW)
+        if hex != active:
+            active = hex
+            GPIO.output(segments, GPIO.HIGH)
+            sleep(duration)
+            GPIO.output(segments, GPIO.LOW)
     else:
         logging.info("Unknown character '%s'", hex)
 
 @app.route('/clear')
 def clear():
-    enable('.', 1) #pulse_length)
+    enable('#', 1) #pulse_length)
     sleep(clear_sleep)
     return "cleared"
 
@@ -74,8 +77,7 @@ def hello(hex):
     matchObj = re.match( r'[1-4#\.]', hex)
     if matchObj:
         clear()
-        if matchObj != '#':
-                enable(segment, pulse_length)
+        enable(segment, pulse_length)
         return "Activated %s" % hex
     else:
         return "invalid input. Only %s are accepted" % valid_input
@@ -123,18 +125,27 @@ def nmea_enable(context, message):
         matchObj = re.match( r'[1-9#\.]', segment)
         if matchObj:
             clear()
-            if matchObj != '#':
-                enable(segment, pulse_length)
+            enable(segment, pulse_length)
             return nmea_status(context, message)
         else:
-            return formatter.format("RXERR,Only %s are accepted" % valid_input)
+            return formatter.format("RXERR,Only %s are accepted" % valid_input, True)
     except BaseException as err:
-        return formatter.format("RXERR,Invalid message. Example of a valid message: $RXSSC,A,1*39")
+        return formatter.format("RXERR,Invalid message. Example of a valid message: $RXSSC,A,1*39", True)
 
 @nmeaserver.message('RXSTA')
 def nmea_status(context, message):
     global active
-    return formatter.format("RXSSS,A,%s,0" % active)
+    return formatter.format("RXSSS,A,%s,0" % active, True)
+
+@nmeaserver.response_stream()
+def status_stream(context, wfile):
+    while context['stream']:
+        try:
+            wfile.write(nmea_status(context,""))
+            wfile.flush
+            time.sleep(1)
+        except BaseException:
+            logger.exception("Caught exception: ")
 
 if __name__ == '__main__':
     GPIO.setmode(GPIO.BOARD)

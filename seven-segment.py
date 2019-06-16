@@ -28,7 +28,7 @@ nmeaserver = server.NMEAServer('', 4000, True)
 pulse_length = 0.1
 clear_sleep = 0.3
 gpio_list = [12,16,18,22,32,36,38,40] #where 40 is reset
-valid_input = '1,2,3,.'
+valid_input = '1,2,3,4,#,.'
 segment_map = {
     '0': [12,16,18,22,32,36],
     '1': [16,18],
@@ -71,10 +71,11 @@ def clear():
 @app.route('/activate/<hex>')
 def hello(hex):
     hex = hex.upper()
-    matchObj = re.match( r'[1-3\.]', hex)
+    matchObj = re.match( r'[1-4#\.]', hex)
     if matchObj:
         clear()
-        enable(hex, pulse_length)
+        if matchObj != '#':
+                enable(segment, pulse_length)
         return "Activated %s" % hex
     else:
         return "invalid input. Only %s are accepted" % valid_input
@@ -119,10 +120,11 @@ def nmea_enable(context, message):
         logger.debug("Received RXSSC message to activate {}".format(message['data'][1]))
         
         segment = message['data'][1]
-        matchObj = re.match( r'[1-9\.]', segment)
+        matchObj = re.match( r'[1-9#\.]', segment)
         if matchObj:
             clear()
-            enable(segment, pulse_length)
+            if matchObj != '#':
+                enable(segment, pulse_length)
             return nmea_status(context, message)
         else:
             return formatter.format("RXERR,Only %s are accepted" % valid_input)

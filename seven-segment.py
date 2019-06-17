@@ -141,7 +141,7 @@ def nmea_status(context, message):
 def status_stream(context, wfile):
     while context['stream']:
         try:
-            wfile.write(nmea_status(context,""))
+            wfile.write(nmea_status(context,"") + "\r\n")
             wfile.flush
             time.sleep(5)
         except BaseException:

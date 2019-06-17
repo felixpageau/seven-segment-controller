@@ -143,7 +143,7 @@ def status_stream(context, wfile):
         try:
             wfile.write(nmea_status(context,""))
             wfile.flush
-            time.sleep(1)
+            time.sleep(5)
         except BaseException:
             logger.exception("Caught exception: ")
 
